@@ -1,4 +1,0 @@
-fastapi
-uvicorn
-yandex-music
-yt-dlp
