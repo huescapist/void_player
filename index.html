@@ -454,9 +454,19 @@
         }
 
         async function apiFetch(endpoint) {
-            const response = await fetch(API_BASE + endpoint, { headers: { 'X-Yandex-Token': userToken } });
-            if (response.status === 401) {
-                errorDiv.innerText = "Архив закрыт. Неверный токен."; errorDiv.style.display = 'block'; logout(); throw new Error("Unauthorized");
+            // Умно приклеиваем токен к ссылке (учитывая, есть ли уже другие параметры, типа fallback)
+            const separator = endpoint.includes('?') ? '&' : '?';
+            const finalUrl = API_BASE + endpoint + separator + 'token=' + encodeURIComponent(userToken);
+            
+            // Выполняем чистый запрос без кастомных заголовков
+            const response = await fetch(finalUrl);
+            
+            // Если токен сдох или Питон его не понял
+            if (response.status === 401 || response.status === 422) {
+                errorDiv.innerText = "Архив закрыт. Неверный токен.";
+                errorDiv.style.display = 'block';
+                logout();
+                throw new Error("Unauthorized");
             }
             if (!response.ok) throw new Error("Server error");
             return response.json();
