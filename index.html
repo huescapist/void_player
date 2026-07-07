@@ -455,7 +455,6 @@
 
         async function apiFetch(endpoint) {
             const separator = endpoint.includes('?') ? '&' : '?';
-            // МЕНЯЕМ token НА key, чтобы обмануть антитрекинг браузера
             const finalUrl = API_BASE + endpoint + separator + 'key=' + encodeURIComponent(userToken);
             
             const response = await fetch(finalUrl);
@@ -469,17 +468,6 @@
             if (!response.ok) throw new Error("Server error");
             return response.json();
         }
-            
-            // Если токен сдох или Питон его не понял
-            if (response.status === 401 || response.status === 422) {
-                errorDiv.innerText = "Архив закрыт. Неверный токен.";
-                errorDiv.style.display = 'block';
-                logout();
-                throw new Error("Unauthorized");
-            }
-            if (!response.ok) throw new Error("Server error");
-            return response.json();
-        
 
         // --- ЛОГИКА ПЛЕЕРА ---
         const audioPlayer = document.getElementById('audio-player');
@@ -553,7 +541,6 @@
                     document.getElementById(`track-${currentPlayingIndex}`).classList.add('playing');
                 }
             } catch (e) {
-                // ТЕПЕРЬ ОН БУДЕТ ПИСАТЬ ОБ ОШИБКЕ, А НЕ ВИСЕТЬ БЕСКОНЕЧНО
                 trackListEl.innerHTML = '<div style="text-align:center; margin-top:50px; color:#fc8181; font-style:italic;">Связь с Архивом оборвалась. Нажми F12, чтобы проверить консоль, или выбери плейлист заново.</div>';
                 console.error("Ошибка загрузки треков:", e);
             }
@@ -574,7 +561,6 @@
             togglePlayUI(false);
 
             try {
-                // Передаем бэкенду выбор юзера через query параметр fallback
                 const data = await apiFetch(`/api/stream/${track.id}?fallback=${currentMutation}`);
                 
                 audioPlayer.src = data.url;
@@ -582,7 +568,6 @@
                 audioPlayer.play();
                 togglePlayUI(true);
 
-                // --- МАГИЯ ДЛЯ ТЕЛЕФОНА (ФОНОВЫЙ РЕЖИМ И ЭКРАН БЛОКИРОВКИ) ---
                 if ('mediaSession' in navigator) {
                     navigator.mediaSession.metadata = new MediaMetadata({
                         title: track.title,
