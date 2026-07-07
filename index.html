@@ -454,12 +454,21 @@
         }
 
         async function apiFetch(endpoint) {
-            // Умно приклеиваем токен к ссылке (учитывая, есть ли уже другие параметры, типа fallback)
             const separator = endpoint.includes('?') ? '&' : '?';
-            const finalUrl = API_BASE + endpoint + separator + 'token=' + encodeURIComponent(userToken);
+            // МЕНЯЕМ token НА key, чтобы обмануть антитрекинг браузера
+            const finalUrl = API_BASE + endpoint + separator + 'key=' + encodeURIComponent(userToken);
             
-            // Выполняем чистый запрос без кастомных заголовков
             const response = await fetch(finalUrl);
+            
+            if (response.status === 401 || response.status === 422) {
+                errorDiv.innerText = "Архив закрыт. Неверный токен.";
+                errorDiv.style.display = 'block';
+                logout();
+                throw new Error("Unauthorized");
+            }
+            if (!response.ok) throw new Error("Server error");
+            return response.json();
+        }
             
             // Если токен сдох или Питон его не понял
             if (response.status === 401 || response.status === 422) {
@@ -470,7 +479,7 @@
             }
             if (!response.ok) throw new Error("Server error");
             return response.json();
-        }
+        
 
         // --- ЛОГИКА ПЛЕЕРА ---
         const audioPlayer = document.getElementById('audio-player');
