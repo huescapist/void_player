@@ -517,7 +517,7 @@
         }
 
         async function loadTracks(playlistId) {
-            trackListEl.innerHTML = '<div style="text-align:center; margin-top:50px;">Чтение мыслей...</div>';
+            trackListEl.innerHTML = '<div style="text-align:center; margin-top:50px; color:#8b9bb4;">Чтение мыслей...</div>';
             searchInput.value = ''; 
             try {
                 currentTracks = await apiFetch(`/api/playlist/${playlistId}`);
@@ -533,7 +533,11 @@
                 if (currentPlayingIndex !== -1 && document.getElementById(`track-${currentPlayingIndex}`)) {
                     document.getElementById(`track-${currentPlayingIndex}`).classList.add('playing');
                 }
-            } catch (e) {}
+            } catch (e) {
+                // ТЕПЕРЬ ОН БУДЕТ ПИСАТЬ ОБ ОШИБКЕ, А НЕ ВИСЕТЬ БЕСКОНЕЧНО
+                trackListEl.innerHTML = '<div style="text-align:center; margin-top:50px; color:#fc8181; font-style:italic;">Связь с Архивом оборвалась. Нажми F12, чтобы проверить консоль, или выбери плейлист заново.</div>';
+                console.error("Ошибка загрузки треков:", e);
+            }
         }
 
         async function playTrack(index) {
